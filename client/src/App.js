@@ -22,38 +22,26 @@ const styles = theme => ({
   table: {
     minWidth: 1080
   }
-})
-
-const customers = [
-  {
-  'id' : 1,
-  'image' : 'http://placeimg.com/64/64/1',
-  'name' : '박주영',
-  'birthday' : '001114',
-  'gender' : '여자',
-  'job' : '대학생'
-},
-{
-  'id' : 2,
-  'image' : 'http://placeimg.com/64/64/2',
-  'name' : '김주영',
-  'birthday' : '001214',
-  'gender' : '여자',
-  'job' : '대학생'
-},
-{
-  'id' : 3,
-  'image' : 'http://placeimg.com/64/64/3',
-  'name' : '이주영',
-  'birthday' : '991114',
-  'gender' : '여자',
-  'job' : '대학생'
-},
-
-]
+});
 
 
 class App extends Component {
+  state = {
+    customers: ""
+  }
+
+  componentDidMount(){  //모든 컴포넌트가 마운트 되었을때 실행되는 것
+    this.callApi()
+    .then(res => this.setState({customers: res})) //body 변수가 callApi 함수에 의해 res로 바뀌어서 customers라는 state의 변수에 담김
+    .catch(err => console.log(err));  //오류 출력
+  }
+
+  callApi = async () => {
+    const response = await fetch('/api/customers');
+    const body = await response.json(); //위 링크의 데이터를 json 형태로 body변수에 담는다는 것
+    return body;
+  }
+
   render() {
     const {classes} = this.props;
     return (
@@ -70,8 +58,8 @@ class App extends Component {
             </TableRow>
           </TableHead>
           <TableBody>
-            {
-              customers.map(c => {
+            { //데이터를 받아오는데 시간이 걸리기 때문에 if문 사용해서 데이터가 없으면 공백으로 표현
+              this.state.customers ? this.state.customers.map(c => {
                 return (<Customer
                   key={c.id} //map 사용할때 key 설정하기
                   id={c.id}
@@ -82,8 +70,7 @@ class App extends Component {
                   job={c.job}
                 />
                 )
-              })
-            }
+              }) : ""}
           </TableBody>
         </Table>
       </Paper>
