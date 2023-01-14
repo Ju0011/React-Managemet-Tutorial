@@ -11,6 +11,9 @@ import  TableBody  from '@material-ui/core/TableBody';
 import  TableRow  from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import { withStyles } from '@material-ui/core/styles';
+import { makeStyles } from '@material-ui/core/styles';
+import CircularProgress from '@material-ui/core/CircularProgress';
+
 
 //공식 사이트 가서 예제 활용하기
 const styles = theme => ({
@@ -21,26 +24,23 @@ const styles = theme => ({
   },
   table: {
     minWidth: 1080
+  },
+  progress: {
+    margin: theme.spacing.unit *2   //위쪽으로 *2 만큼
   }
 });
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    display: 'flex',
-    '& > * + *': {
-      marginLeft: theme.spacing(2),
-    },
-  },
-}));
 
 
 class App extends Component {
   state = {
-    customers: ""
+    customers: "",
+    completed: 0  //게이지 변수
   }
 
   componentDidMount(){  //모든 컴포넌트가 마운트 되었을때 실행되는 것
-    this.callApi()
+    this.timer = setInterval(this.progress, 20);  //타이머 이용 => 0.02초 마다 프로그래스 함수가 실행
+    
+    this.callApi()  //데이터 받아오는 부분을 일부러 느리게 만드려면 API 호출을 지연시켜야함
     .then(res => this.setState({customers: res})) //body 변수가 callApi 함수에 의해 res로 바뀌어서 customers라는 state의 변수에 담김
     .catch(err => console.log(err));  //오류 출력
   }
@@ -49,6 +49,11 @@ class App extends Component {
     const response = await fetch('/api/customers');
     const body = await response.json(); //위 링크의 데이터를 json 형태로 body변수에 담는다는 것
     return body;
+  }
+
+  progress = () => {
+    const {completed} = this.state;
+    this.setState({completed: completed >= 100 ? 0 : completed +1});
   }
 
   render() {
@@ -67,7 +72,7 @@ class App extends Component {
             </TableRow>
           </TableHead>
           <TableBody>
-            { //데이터를 받아오는데 시간이 걸리기 때문에 if문 사용해서 데이터가 없으면 공백으로 표현
+            { //데이터를 받아오는데 시간이 걸리기 때문에 if문 사용해서 데이터가 없으면 공백으로 표현 => 게이지 바 표현
               this.state.customers ? this.state.customers.map(c => {
                 return (<Customer
                   key={c.id} //map 사용할때 key 설정하기
@@ -79,7 +84,13 @@ class App extends Component {
                   job={c.job}
                 />
                 )
-              }) : ""}
+              }) : 
+              <TableRow>
+                <TableCell colSpan="6" align= "center">
+                  <CircularProgress className={classes.progress} variant = "determinate" value = {this.state.completed} />
+                </TableCell>
+                </TableRow>
+                }
           </TableBody>
         </Table>
       </Paper>
