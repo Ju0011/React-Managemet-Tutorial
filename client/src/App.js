@@ -24,6 +24,15 @@ const styles = theme => ({
   }
 });
 
+const useStyles = makeStyles((theme) => ({
+  root: {
+    display: 'flex',
+    '& > * + *': {
+      marginLeft: theme.spacing(2),
+    },
+  },
+}));
+
 
 class App extends Component {
   state = {
